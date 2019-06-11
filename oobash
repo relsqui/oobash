@@ -2,14 +2,23 @@
 
 shopt -s expand_aliases
 
+declare -a oob_instances
+declare -a oob_properties
+
 class() {
     _main() {
-        first="${1:0:1}"
-        echo $first
+        echo $@
+    }
+    _init() {
+        local props[bar]=baz
     }
     _main $@
 }
 
 new () {
-    declare -f $1 | head -n -1 | tail -n +3
+    id=$RANDOM
+    class_definition=$(declare -f $1)
+    instance_definition="instances[${id}]${class_definition#$1}"
+    echo "$instance_definition"
+    echo -e "instances[${id}] " '$@'
 }

@@ -2,5 +2,5 @@
 
 source oobash
 
-alias foo="$(new class)"
+alias foo=$(new class)
 foo .bar
