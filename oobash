@@ -1,0 +1,15 @@
+#!/bin/bash
+
+shopt -s expand_aliases
+
+class() {
+    _main() {
+        first="${1:0:1}"
+        echo $first
+    }
+    _main $@
+}
+
+new () {
+    declare -f $1 | head -n -1 | tail -n +3
+}
