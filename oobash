@@ -2,7 +2,7 @@
 
 shopt -s expand_aliases
 
-class() {
+object() {
     local identifier=$1
     shift
     if [ "${1:0:1}" == '.' ]; then
@@ -20,5 +20,6 @@ new () {
     class_definition=$(declare -f $1)
     instance_definition="${identifier}${class_definition#$1}"
     echo "$instance_definition"
+    echo "declare -A ${identifier}_props"
     echo -e "${identifier} ${identifier}" '$@'
 }
