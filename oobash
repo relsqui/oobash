@@ -3,10 +3,8 @@
 shopt -s expand_aliases
 
 object() {
-    local identifier=$1
-    shift
     if [ "${1:0:1}" == '.' ]; then
-        local property="${identifier}_props[${1:1}]"
+        local property="oob_${FUNCNAME[0]}_props[${1:1}]"
         if [ "$2" == "=" ]; then
             eval "${property}=$3"
         else
@@ -16,10 +14,12 @@ object() {
 }
 
 new () {
-    identifier="oob_$1_${RANDOM}"
-    class_definition=$(declare -f $1)
-    instance_definition="${identifier}${class_definition#$1}"
+    # TODO: validate params
+    class=$1
+    name=$2
+    class_definition=$(declare -f $class)
+    instance_definition="${name}${class_definition#$class}"
+    # semicolon because eval is going to mash this into one line
+    echo "declare -A oob_${name}_props;"
     echo "$instance_definition"
-    echo "declare -A ${identifier}_props"
-    echo -e "${identifier} ${identifier}" '$@'
 }
