@@ -1,7 +1,5 @@
 #!/bin/bash
 
-shopt -s expand_aliases
-
 object() {
     if [ "${1:0:1}" == '.' ]; then
         local property="oob_${FUNCNAME[0]}_props[${1:1}]"
