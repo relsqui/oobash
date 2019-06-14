@@ -1,0 +1,3 @@
+add unique IDs to objects (check max_int and throw if you hit it)
+add methods to objects
+add constructors
