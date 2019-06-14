@@ -1,23 +1,59 @@
 #!/bin/bash
 
+# could put here a check -- unless we got a -y argument
+# say "this will clobber all these vars, that ok?"
+# and if not, exit before doing it
+
+err() {
+    echo "!! $@" 1>&2
+}
+
+inherits() {
+    child=$1
+    parent=$2
+    if [ -z "$class" ]; then exit 1; fi
+    if [ -z "$name" ]; then exit 2; fi
+    oob_parents[$child]=$parent
+}
+
 object() {
-    if [ "${1:0:1}" == '.' ]; then
-        local property="oob_${FUNCNAME[0]}_props[${1:1}]"
-        if [ "$2" == "=" ]; then
-            eval "${property}=$3"
+    self=${FUNCNAME[0]}
+    command="$1"
+    shift
+    if [ "$command" == "inherits" ]; then
+        if [ -n "$1" ]; then
+            oob_parents[$self]="$1"
+        fi
+    elif [ "${command:0:1}" == '.' ]; then
+        local property="oob_object_${self}[${command:1}]"
+        if [ "$1" == "=" ]; then
+            shift
+            eval "${property}=\"$@\""
         else
-            eval "echo \${${property}}"
+            if [ -n "${!property}" ]; then
+                echo "${!property}"
+            elif [ -n "${oob_parents[$self]}" ]; then
+                "${oob_parents[$self]}" $command $@
+            else
+                err "Property not found: $command"
+            fi
         fi
     fi
 }
 
-new () {
-    # TODO: validate params
+new() {
     class=$1
     name=$2
+    if [ -z "$class" ]; then exit 1; fi
+    if [ -z "$name" ]; then exit 2; fi
     class_definition=$(declare -f $class)
+    if [ -z "$class_definition" ]; then exit 3; fi
     instance_definition="${name}${class_definition#$class}"
     # semicolon because eval is going to mash this into one line
-    echo "declare -A oob_${name}_props;"
-    echo "$instance_definition"
+    echo "declare -A oob_parents;"
+    echo "declare -A oob_object_${name};"
+    echo "$instance_definition;"
+    echo "$name inherits $class;"
 }
+
+eval "$(new object class)"
