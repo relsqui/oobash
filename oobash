@@ -4,8 +4,9 @@
 # say "this will clobber all these vars, that ok?"
 # and if not, exit before doing it
 
-err() {
+throw() {
     echo "!! $@" 1>&2
+    exit 1
 }
 
 inherits() {
@@ -20,10 +21,25 @@ object() {
     self=${FUNCNAME[0]}
     command="$1"
     shift
+
     if [ "$command" == "inherits" ]; then
         if [ -n "$1" ]; then
             oob_parents[$self]="$1"
         fi
+
+    elif [ "$command" == "def" ]; then
+        method_name="$1"
+        if [ -z "$method_name" ]; then
+            throw "No method name supplied"
+        fi
+        full_name="oob_object_$self[$method_name]"
+        read -r -d '' method_definition
+        source <(echo -e "$full_name () {\n$method_definition\n}")
+
+    elif [ "$command" == "keys" ]; then
+        test_name="\${!oob_object_${self}[@]}"
+        eval echo "$test_name"
+
     elif [ "${command:0:1}" == '.' ]; then
         local property="oob_object_${self}[${command:1}]"
         if [ "$1" == "=" ]; then
@@ -35,7 +51,7 @@ object() {
             elif [ -n "${oob_parents[$self]}" ]; then
                 "${oob_parents[$self]}" $command $@
             else
-                err "Property not found: $command"
+                throw "Property not found: $command"
             fi
         fi
     fi
