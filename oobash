@@ -9,6 +9,12 @@ throw() {
     exit 1
 }
 
+debug() {
+    if [ -n "$DEBUG" ]; then
+        echo "$@" 1>&2
+    fi
+}
+
 inherits() {
     child=$1
     parent=$2
@@ -33,7 +39,7 @@ object() {
             throw "No method name supplied"
         fi
         full_name="oob_object_$self[$method_name]"
-        read -r method_definition
+        read -r -d '' method_definition
         source <(echo -e "$full_name () {\n$method_definition\n}")
 
     elif [ "$command" == "keys" ]; then
@@ -46,8 +52,12 @@ object() {
             shift
             eval "${property}=\"$@\""
         else
-            if [ -n "${!property}" ]; then
-                echo "${!property}"
+            value="${!property}"
+            type=$(type -t "$property")
+            if [ -n "$value" ]; then
+                echo "$value"
+            elif [ "$type" == "function" ]; then
+                "${property}" $@
             elif [ -n "${oob_parents[$self]}" ]; then
                 "${oob_parents[$self]}" $command $@
             else
