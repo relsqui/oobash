@@ -11,7 +11,7 @@ throw() {
 
 debug() {
     if [ -n "$DEBUG" ]; then
-        echo "$@" 1>&2
+        echo "-- $@" 1>&2
     fi
 }
 
@@ -24,42 +24,46 @@ inherits() {
 }
 
 object() {
-    self=${FUNCNAME[0]}
-    command="$1"
+    local this_object=${FUNCNAME[0]}
+    if [ -z "$self" ]; then local self="$this_object"; fi
+    local command="$1"
     shift
 
     if [ "$command" == "inherits" ]; then
         if [ -n "$1" ]; then
-            oob_parents[$self]="$1"
+            oob_parents[$this_object]="$1"
         fi
 
     elif [ "$command" == "def" ]; then
-        method_name="$1"
+        local method_name="$1"
         if [ -z "$method_name" ]; then
             throw "No method name supplied"
         fi
-        full_name="oob_object_$self[$method_name]"
+        local full_name="oob_object_$this_object[$method_name]"
+        local method_definition
         read -r -d '' method_definition
         source <(echo -e "$full_name () {\n$method_definition\n}")
 
     elif [ "$command" == "keys" ]; then
-        test_name="\${!oob_object_${self}[@]}"
+        local test_name="\${!oob_object_${this_object}[@]}"
         eval echo "$test_name"
 
     elif [ "${command:0:1}" == '.' ]; then
-        local property="oob_object_${self}[${command:1}]"
+        local property="oob_object_${this_object}[${command:1}]"
         if [ "$1" == "=" ]; then
             shift
             eval "${property}=\"$@\""
         else
-            value="${!property}"
-            type=$(type -t "$property")
+            local value="${!property}"
+            local type=$(type -t "$property")
             if [ -n "$value" ]; then
                 echo "$value"
             elif [ "$type" == "function" ]; then
-                "${property}" $@
-            elif [ -n "${oob_parents[$self]}" ]; then
-                "${oob_parents[$self]}" $command $@
+                debug "calling function $property for $self"
+                self=$self "$property" $@
+            elif [ -n "${oob_parents[$this_object]}" ]; then
+                debug "$this_object doesn't have $property for $self, going to parent"
+                self=$self "${oob_parents[$this_object]}" $command $@
             else
                 throw "Property not found: $command"
             fi
@@ -68,14 +72,14 @@ object() {
 }
 
 new() {
-    class=$1
-    name=$2
+    local class=$1
+    local name=$2
     if [ -z "$class" ]; then exit 1; fi
     if [ -z "$name" ]; then exit 2; fi
-    class_definition=$(declare -f $class)
+    local class_definition=$(declare -f $class)
     if [ -z "$class_definition" ]; then exit 3; fi
-    instance_definition="${name}${class_definition#$class}"
-    # semicolon because eval is going to mash this into one line
+    local instance_definition="${name}${class_definition#$class}"
+    # semicolons because eval is going to mash this into one line
     echo "declare -A oob_parents;"
     echo "declare -A oob_object_${name};"
     echo "$instance_definition;"

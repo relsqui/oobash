@@ -1,4 +1,2 @@
 add unique IDs to objects (check max_int and throw if you hit it)
-apply 'local' in a bunch of internal places
-add methods to objects
 add constructors

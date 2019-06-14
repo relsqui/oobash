@@ -1,13 +1,18 @@
 source oobash
 
-eval $(new object widget)
-widget .intro = 'I am a widget!'
-widget def fancy_echo << 'EOF'
-echo "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
-echo "~!~ $@ ~!~"
-echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+eval $(new class widget)
+widget .name = 'Widget Class'
+widget def introduce << 'EOF'
+echo "Hi, I'm $($self .name)!"
 EOF
 
-widget .fancy_echo $(widget .intro)
+eval $(new widget widget1)
+widget1 .name = 'Widget One'
+
+eval $(new widget widget2)
+widget2 .name = 'Widget Two'
+
+widget1 .introduce
+widget2 .introduce
 
 
