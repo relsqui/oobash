@@ -33,7 +33,7 @@ object() {
             throw "No method name supplied"
         fi
         full_name="oob_object_$self[$method_name]"
-        read -r -d '' method_definition
+        read -r method_definition
         source <(echo -e "$full_name () {\n$method_definition\n}")
 
     elif [ "$command" == "keys" ]; then
