@@ -3,7 +3,6 @@ let oob_next_id=1
 
 throw() {
     echo "!! $@" 1>&2
-    exit 1
 }
 
 debug() {
@@ -15,43 +14,36 @@ debug() {
 object() {
     local this_object=${FUNCNAME[0]}
     if [ -z "$self" ]; then local self="$this_object"; fi
-    local command="$1"
+    local prop_name="$1"
+    if [ -z "$prop_name" ]; then echo $self; return 0; fi
     shift
 
-    if [ "$command" == "def" ]; then
-        local method_name="$1"
-        if [ -z "$method_name" ]; then
-            throw "No method name supplied"
-        fi
-        local full_name="oob_object_$this_object[$method_name]"
-        local method_definition
-        read -r -d '' method_definition
-        source <(echo -e "$full_name () {\n$method_definition\n}")
-
+    local property="oob_object_${this_object}[$prop_name]"
+    if [ "$1" == "=" ]; then
+        shift
+        eval "${property}=\"$@\""
+    elif [ -n "$1" ]; then
+        throw "Unexpected arguments: $@"
     else
-        local property="oob_object_${this_object}[$command]"
-        if [ "$1" == "=" ]; then
-            shift
-            eval "${property}=\"$@\""
+        local value="${!property}"
+        local type=$(type -t "$property")
+        if read -t 0 -u 0; then
+            local method_definition
+            read -d '' method_definition
+            source <(echo -e "$property () {\n$method_definition\n}")
+        elif [ "$type" == "function" ]; then
+            self=$self "$property" $@
+        elif [ -n "$value" ]; then
+            echo "$value"
+        elif [ -n "${oob_parents[$this_object]}" ]; then
+            self=$self super=$($self __class) "${oob_parents[$this_object]}" $prop_name $@
         else
-            local value="${!property}"
-            local type=$(type -t "$property")
-            if [ -n "$value" ]; then
-                echo "$value"
-            elif [ "$type" == "function" ]; then
-                debug "calling function $property for $self"
-                self=$self "$property" $@
-            elif [ -n "${oob_parents[$this_object]}" ]; then
-                debug "$this_object doesn't have $property for $self, going to parent"
-                self=$self super=$($self __class) "${oob_parents[$this_object]}" $command $@
-            else
-                throw "Property not found: $command"
-            fi
+            throw "Property not found: $prop_name"
         fi
     fi
 }
 
-object def keys <<'EOF'
+object keys <<'EOF'
     local test_name="\${!oob_object_$self[@]}"
     eval echo "$test_name"
 EOF
