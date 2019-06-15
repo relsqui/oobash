@@ -1,5 +1,4 @@
-have new always create an object and set the parent rather than copying the class
-add unique IDs to objects (check max_int and throw if you hit it)
 add $super to go with $self
 move basic object functionality into methods (getters, setters, operators) so they can be overloaded
 add constructors
+reimplement keys

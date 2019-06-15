@@ -1,6 +1,9 @@
 #!/bin/bash
 
+declare -A oob_objects
 declare -A oob_parents
+declare -A oob_properties
+let oob_next_id=1
 
 throw() {
     echo "!! $@" 1>&2
@@ -19,27 +22,16 @@ object() {
     local command="$1"
     shift
 
-    if [ "$command" == "inherits" ]; then
-        if [ -n "$1" ]; then
-            oob_parents[$this_object]="$1"
-        fi
-
-    elif [ "$command" == "def" ]; then
+    if [ "$command" == "def" ]; then
         local method_name="$1"
-        if [ -z "$method_name" ]; then
-            throw "No method name supplied"
-        fi
-        local full_name="oob_object_$this_object[$method_name]"
+        if [ -z "$method_name" ]; then throw "'def' requires a method name"; fi
         local method_definition
         read -r -d '' method_definition
+        local full_name="oob_properties[${this_object}_${method_name}]"
         source <(echo -e "$full_name () {\n$method_definition\n}")
 
-    elif [ "$command" == "keys" ]; then
-        local test_name="\${!oob_object_${this_object}[@]}"
-        eval echo "$test_name"
-
     elif [ "${command:0:1}" == '.' ]; then
-        local property="oob_object_${this_object}[${command:1}]"
+        local property="oob_properties[${this_object}_${command:1}]"
         if [ "$1" == "=" ]; then
             shift
             eval "${property}=\"$@\""
@@ -63,19 +55,20 @@ object() {
 
 new() {
     local class=$1
-    local name=$2
-    if [[ -z "$class" || -z "$name" ]]; then
-        throw "'new' requires two arguments (class and name)"
-    fi
-    local class_definition=$(declare -f $class)
+    local class_definition=$(declare -f ${!class})
     if [ -z "$class_definition" ]; then
         throw "Can't instantiate '$class'"
     fi
-    local instance_definition="${name}${class_definition#$class}"
-    # semicolons because eval is going to mash this into one line
-    echo "declare -A oob_object_${name};"
-    echo "$instance_definition;"
-    echo "$name inherits $class;"
+    local id=$oob_next_id
+    oob_next_id=( $oob_next_id + 1 )
+    local instance_var="oob_objects[$id]"
+    local object_definition=$(declare -f object)
+    source <(echo "${instance_var}${object_definition#object}")
+    oob_parents[$id]="$class"
+    echo $instance_var
 }
 
-eval "$(new object class)"
+class=$(new object)
+debug $class
+declare -f $class
+debug $oob_next_id
