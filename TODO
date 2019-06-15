@@ -1,2 +1,0 @@
-move basic object functionality into methods (getters, setters, operators) so they can be overloaded
-add constructors
