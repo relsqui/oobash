@@ -4,6 +4,8 @@ eval $(new class widget)
 widget .name = 'Widget Class'
 widget def introduce << 'EOF'
 echo "Hi, I'm $($self .name)!"
+echo "My parent is $($super .name)."
+echo
 EOF
 
 eval $(new widget widget1)

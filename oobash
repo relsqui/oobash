@@ -52,7 +52,7 @@ object() {
                 self=$self "$property" $@
             elif [ -n "${oob_parents[$this_object]}" ]; then
                 debug "$this_object doesn't have $property for $self, going to parent"
-                self=$self "${oob_parents[$this_object]}" $command $@
+                self=$self super=$($self .__class) "${oob_parents[$this_object]}" $command $@
             else
                 throw "Property not found: $command"
             fi
