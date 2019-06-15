@@ -1,4 +1,4 @@
-source oobash
+source oobash.sh
 
 widget_count=0
 

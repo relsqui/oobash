@@ -1,7 +1,7 @@
 declare -A oob_parents
 let oob_next_id=1
 
-throw() {
+err() {
     echo "!! $@" 1>&2
 }
 
@@ -44,7 +44,7 @@ object() {
             debug "searching $self's parent for $prop_name"
             self=$self super=${oob_parents[$this_object]} "${oob_parents[$this_object]}" $prop_name "$@"
         else
-            throw "Property not found: $prop_name"
+            err "Property not found: $prop_name"
         fi
     fi
 }
@@ -63,10 +63,10 @@ new() {
     local class=$1
     local name=$2
     if [[ -z "$class" || -z "$name" ]]; then
-        throw "'new' requires two arguments (class and name)"
+        err "'new' requires two arguments (class and name)"
     fi
     if [ "$(type -t "$class")" !=  "function" ]; then
-        throw "Can't instantiate '$class'"
+        err "Can't instantiate '$class'"
     fi
     local object_definition=$(declare -f object)
     local instance_definition="${name}${object_definition#object}"
