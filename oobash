@@ -18,12 +18,7 @@ object() {
     local command="$1"
     shift
 
-    if [ "$command" == "inherits" ]; then
-        if [ -n "$1" ]; then
-            oob_parents[$this_object]="$1"
-        fi
-
-    elif [ "$command" == "def" ]; then
+    if [ "$command" == "def" ]; then
         local method_name="$1"
         if [ -z "$method_name" ]; then
             throw "No method name supplied"
@@ -32,10 +27,6 @@ object() {
         local method_definition
         read -r -d '' method_definition
         source <(echo -e "$full_name () {\n$method_definition\n}")
-
-    elif [ "$command" == "keys" ]; then
-        local test_name="\${!oob_object_${this_object}[@]}"
-        eval echo "$test_name"
 
     else
         local property="oob_object_${this_object}[$command]"
@@ -60,6 +51,11 @@ object() {
     fi
 }
 
+object def keys <<'EOF'
+    local test_name="\${!oob_object_$self[@]}"
+    eval echo "$test_name"
+EOF
+
 new() {
     local class=$1
     local name=$2
@@ -74,7 +70,7 @@ new() {
     # semicolons because eval is going to mash this into one line
     echo "declare -A oob_object_${name};"
     echo "$instance_definition;"
-    echo "$name inherits $class;"
+    echo "oob_parents[$name]=$class;"
     echo "$name __class = $class;"
     echo "$name __id = $oob_next_id;"
     echo "let oob_next_id++;"
