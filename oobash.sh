@@ -13,6 +13,27 @@ debug() {
     fi
 }
 
+new() {
+    local class=$1
+    local name=$2
+    if [[ -z "$class" || -z "$name" ]]; then
+        err "'new' requires two arguments (class and name)"
+    fi
+    if [ "$(type -t "$class")" !=  "function" ]; then
+        err "Can't instantiate '$class'"
+    fi
+    local object_definition=$(declare -f object)
+    local instance_definition="${name}${object_definition#object}"
+    # semicolons because eval is going to mash this into one line
+    echo "declare -A oob_object_${name};"
+    echo "$instance_definition;"
+    echo "oob_parents[$name]=$class;"
+    echo "$name __class = $class;"
+    echo "$name __id = $oob_next_id;"
+    echo "let oob_next_id++;"
+    echo "$name __constructor;"
+}
+
 object() {
     local this_object=${FUNCNAME[0]}
     if [ -z "$self" ]; then local self="$this_object"; fi
@@ -58,26 +79,5 @@ object __assign <<'EOF'
     shift
     eval "oob_object_${self}[$property]=$(printf %q \"$@\")"
 EOF
-
-new() {
-    local class=$1
-    local name=$2
-    if [[ -z "$class" || -z "$name" ]]; then
-        err "'new' requires two arguments (class and name)"
-    fi
-    if [ "$(type -t "$class")" !=  "function" ]; then
-        err "Can't instantiate '$class'"
-    fi
-    local object_definition=$(declare -f object)
-    local instance_definition="${name}${object_definition#object}"
-    # semicolons because eval is going to mash this into one line
-    echo "declare -A oob_object_${name};"
-    echo "$instance_definition;"
-    echo "oob_parents[$name]=$class;"
-    echo "$name __class = $class;"
-    echo "$name __id = $oob_next_id;"
-    echo "let oob_next_id++;"
-    echo "$name __constructor;"
-}
 
 eval $(new object class)
