@@ -1,6 +1,5 @@
-#!/bin/bash
-
 declare -A oob_parents
+let oob_next_id=1
 
 throw() {
     echo "!! $@" 1>&2
@@ -76,6 +75,9 @@ new() {
     echo "declare -A oob_object_${name};"
     echo "$instance_definition;"
     echo "$name inherits $class;"
+    echo "$name .__class = $class;"
+    echo "$name .__id = $oob_next_id;"
+    echo "let oob_next_id++;"
 }
 
 eval $(new object class)

@@ -1,4 +1,3 @@
-add unique IDs to objects (check max_int and throw if you hit it)
 add $super to go with $self
 move basic object functionality into methods (getters, setters, operators) so they can be overloaded
 add constructors
