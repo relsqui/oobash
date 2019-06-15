@@ -18,32 +18,42 @@ object() {
     if [ -z "$prop_name" ]; then echo $self; return 0; fi
     shift
 
+    debug "[$this_object] $prop_name $@"
     local property="oob_object_${this_object}[$prop_name]"
     if [ "$1" == "=" ]; then
         shift
-        eval "${property}=\"$@\""
-    elif [ -n "$1" ]; then
-        throw "Unexpected arguments: $@"
+        debug "assigning $self's $prop_name"
+        $self __assign $prop_name "$@"
     else
         local value="${!property}"
         local type=$(type -t "$property")
         if read -t 0 -u 0; then
+            debug "defining $self's $prop_name method"
             local method_definition
             read -d '' method_definition
             source <(echo -e "$property () {\n$method_definition\n}")
         elif [ "$type" == "function" ]; then
-            self=$self "$property" $@
+            debug "calling $this_object's $prop_name method for $self's $1"
+            self=$self "$property" "$@"
         elif [ -n "$value" ]; then
+            debug "returning $self's $prop_name value ($value)"
             echo "$value"
         elif [ -n "${oob_parents[$this_object]}" ]; then
-            self=$self super=$($self __class) "${oob_parents[$this_object]}" $prop_name $@
+            debug "searching $self's parent for $prop_name"
+            self=$self super=${oob_parents[$this_object]} "${oob_parents[$this_object]}" $prop_name "$@"
         else
             throw "Property not found: $prop_name"
         fi
     fi
 }
 
-object keys <<'EOF'
+object __assign <<'EOF'
+    property=$1
+    shift
+    eval "oob_object_${self}[$property]=$(printf %q \"$@\")"
+EOF
+
+object __keys <<'EOF'
     local test_name="\${!oob_object_$self[@]}"
     eval echo "$test_name"
 EOF
