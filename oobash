@@ -67,15 +67,15 @@ new() {
     if [[ -z "$class" || -z "$name" ]]; then
         throw "'new' requires two arguments (class and name)"
     fi
-    local class_definition=$(declare -f $class)
-    if [ -z "$class_definition" ]; then
+    if [ "$(type -t "$class")" !=  "function" ]; then
         throw "Can't instantiate '$class'"
     fi
-    local instance_definition="${name}${class_definition#$class}"
+    local object_definition=$(declare -f object)
+    local instance_definition="${name}${object_definition#object}"
     # semicolons because eval is going to mash this into one line
     echo "declare -A oob_object_${name};"
     echo "$instance_definition;"
     echo "$name inherits $class;"
 }
 
-eval "$(new object class)"
+eval $(new object class)
