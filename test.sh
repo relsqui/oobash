@@ -1,20 +1,20 @@
 source oobash
 
 eval $(new class widget)
-widget .name = 'Widget Class'
+widget name = 'Widget Class'
 widget def introduce << 'EOF'
-echo "Hi, I'm $($self .name)!"
-echo "My parent is $($super .name)."
+echo "Hi, I'm $($self name)!"
+echo "My parent is $($super name)."
 echo
 EOF
 
 eval $(new widget widget1)
-widget1 .name = 'Widget One'
+widget1 name = 'Widget One'
 
 eval $(new widget widget2)
-widget2 .name = 'Widget Two'
+widget2 name = 'Widget Two'
 
-widget1 .introduce
-widget2 .introduce
+widget1 introduce
+widget2 introduce
 
 
