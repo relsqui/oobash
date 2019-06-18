@@ -80,4 +80,29 @@ object __assign <<'EOF'
     eval "oob_object_${self}[$property]=$(printf %q \"$@\")"
 EOF
 
+oob_prototype_cnfhandle ()
+{
+    if false; then
+        echo "placeholder for parsing stuff"
+    elif [ -n "$oob_old_cnfhandle" ]; then
+        oob_old_cnfhandle "$@"
+    else
+        echo "bash: $1: command not found (handled)"
+    fi
+    return 127
+}
+
+oob_cnfhandle="$(declare -f oob_prototype_cnfhandle)"
+oob_cnfhandle="command_not_found_handle${oob_cnfhandle#oob_prototype_cnfhandle}"
+if [ -z "$oob_old_cnfhandle" ]; then
+    oob_old_cnfhandle="$(declare -f command_not_found_handle)"
+fi
+if [ "$oob_old_cnfhandle" == "$oob_cnfhandle" ]; then
+    unset oob_old_cnfhandle
+fi
+if [ -n "$oob_old_cnfhandle" ]; then
+    source <(echo "oob_old_cnfhandle ${oob_old_cnfhandle#command_not_found_handle}")
+fi
+source <(echo "$oob_cnfhandle")
+
 eval $(new object class)
