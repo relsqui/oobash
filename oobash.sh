@@ -1,11 +1,11 @@
 declare -A oob_parents
 let oob_next_id=1
 
-err() {
+oob_err() {
     echo "!! $@" 1>&2
 }
 
-debug() {
+oob_debug() {
     if [ -n "$DEBUG" ]; then
         local depth=$((${#FUNCNAME[*]} * 2 - 2))
         local dashes=$(printf '%.0s-' $(seq $depth))
@@ -17,10 +17,10 @@ new() {
     local class=$1
     local name=$2
     if [[ -z "$class" || -z "$name" ]]; then
-        err "'new' requires two arguments (class and name)"
+        oob_err "'new' requires two arguments (class and name)"
     fi
     if [ "$(type -t "$class")" !=  "function" ]; then
-        err "Can't instantiate '$class'"
+        oob_err "Can't instantiate '$class'"
     fi
     local object_definition=$(declare -f object)
     local instance_definition="${name}${object_definition#object}"
@@ -41,31 +41,31 @@ object() {
     if [ -z "$prop_name" ]; then echo $self; return 0; fi
     shift
 
-    debug "[$this_object] $prop_name $@"
+    oob_debug "[$this_object] $prop_name $@"
     local property="oob_object_${this_object}[$prop_name]"
     if [ "$1" == "=" ]; then
         shift
-        debug "assigning $self's $prop_name"
+        oob_debug "assigning $self's $prop_name"
         $self __assign $prop_name "$@"
     else
         local value="${!property}"
         local type=$(type -t "$property")
         if read -t 0 -u 0; then
-            debug "defining $self's $prop_name method"
+            oob_debug "defining $self's $prop_name method"
             local method_definition
             read -d '' method_definition
             source <(echo -e "$property () {\n$method_definition\n}")
         elif [ "$type" == "function" ]; then
-            debug "calling $this_object's $prop_name method for $self ($@)"
+            oob_debug "calling $this_object's $prop_name method for $self ($@)"
             self=$self "$property" "$@"
         elif [ -n "$value" ]; then
-            debug "returning $self's $prop_name value ($value)"
+            oob_debug "returning $self's $prop_name value ($value)"
             echo "$value"
         elif [ -n "${oob_parents[$this_object]}" ]; then
-            debug "searching $self's parent for $prop_name"
+            oob_debug "searching $self's parent for $prop_name"
             self=$self super=${oob_parents[$this_object]} "${oob_parents[$this_object]}" $prop_name "$@"
         else
-            err "Property not found: $prop_name"
+            oob_err "Property not found: $prop_name"
         fi
     fi
 }
