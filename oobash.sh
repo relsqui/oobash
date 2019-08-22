@@ -104,5 +104,3 @@ if [ -n "$oob_old_cnfhandle" ]; then
     source <(echo "oob_old_cnfhandle ${oob_old_cnfhandle#command_not_found_handle}")
 fi
 source <(echo "$oob_cnfhandle")
-
-eval $(new object class)

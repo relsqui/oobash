@@ -2,7 +2,7 @@ source oobash.sh
 
 widget_count=0
 
-eval $(new class widget)
+eval $(new object widget)
 widget name = 'Widget Class'
 
 widget __constructor << 'EOF'
@@ -25,5 +25,3 @@ widget2 name = 'Widgetest'
 widget1 introduce widget2
 echo
 widget2 introduce widget1
-
-
