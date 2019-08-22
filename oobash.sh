@@ -6,7 +6,7 @@ oob_err() {
 }
 
 oob_debug() {
-    if [ -n "$DEBUG" ]; then
+    if [ -n "$OOB_DEBUG" ]; then
         local depth=$((${#FUNCNAME[*]} * 2 - 2))
         local dashes=$(printf '%.0s-' $(seq $depth))
         echo "${dashes}$@" 1>&2
