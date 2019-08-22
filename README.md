@@ -30,6 +30,8 @@ my_obj method
 
 eval $(new object other_obj)
 other_obj property = $(my_obj property)
+other_obj property
+# prints: value
 
 ```
 
