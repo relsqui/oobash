@@ -1,8 +1,14 @@
 # Oobash
 
+_(c) 2019 Finn Ellis, available for use under the terms of the [MIT license](LICENSE)._
+
 An object-oriented programming library for bash. Sourcing `oobash.sh` allows you to define objects in bash scripts which have properties, methods, and inheritance. They're less like Java classes and more like Lua tables, in that there's no class/object distinction; each object just has a parent, to which it will look for methods and properties not defined on it.
 
-Oobash currently has no external dependencies (not even on standard utilities) and keeps its metadata entirely in environment variables, not the filesystem. I reserve the right to change either of those in the future if it facilitates implementing something cool, but I prefer not to as long as other options are available.
+Oobash currently has no external dependencies (not even on standard utilities), although it does use features of **bash 4** and will not work in earlier versions. It also keeps its metadata entirely in environment variables, not the filesystem. I reserve the right to change either of those constraints in the future if it facilitates implementing something cool, but I prefer not to as long as other options are available.
+
+## Getting Help & Contributing
+
+Feel free to open issues in this repository, or make pull requests with small changes. If you would like to make a large change, please open an issue first to propose it.
 
 ## Usage Cheatsheet
 
@@ -57,8 +63,6 @@ widget name = 'Widget Class'
 
 Define methods with herestring syntax. The `__constructor` method is special, and will be run every time you create an object as a child of the one you defined the constructor on.
 
-Note that you also have `$self` available to refer to an object from inside its own methods. 
-
 This constructor assigns every widget we create a number, incrementing each time:
 
 ```bash
@@ -69,6 +73,8 @@ widget __constructor << 'EOF'
     $self widget_number = $widget_count
 EOF
 ```
+
+Note that you also have `$self` available to refer to an object from inside its own methods.
 
 Like other bash functions, oobash methods can access their arguments with `$1`, `$2`, and so on. They can also use `$super` to refer to the object defined as their parent.
 
@@ -89,7 +95,7 @@ eval $(new widget widget1)
 widget1 name = 'Widgeter'
 
 eval $(new widget widget2)
-widget2 name = 'Widgetest
+widget2 name = 'Widgetest'
 ```
 
 Child objects can call methods defined on their parent.
@@ -123,10 +129,6 @@ My parent is Widget Class.
 ----------returning widget2's name value (Widgeter)
 Please meet my friend, Widgeter.
 ```
-
-## Getting Help & Contributing
-
-Feel free to open issues in this repository, or make pull requests with small changes. If you're proposing a large change, please make an issue first.
 
 ## ... Why?!
 
